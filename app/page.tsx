@@ -29,11 +29,12 @@ const galleryItem: Variants = {
 
 export default function Home() {
   const [active, setActive] = useState('All');
-  const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
+  const [selectedSlug, setSelectedSlug] = useState<string | null>(() =>
+    typeof window !== 'undefined' ? slugFromPath(window.location.pathname) : null
+  );
   const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
 
   useEffect(() => {
-    setSelectedSlug(slugFromPath(window.location.pathname));
     const onPopState = () => setSelectedSlug(slugFromPath(window.location.pathname));
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
