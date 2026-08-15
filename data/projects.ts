@@ -9,7 +9,24 @@ export type Project = {
 };
 
 export const projects: Project[] = [
-  { id: '1', slug: 'champion-x-undercover', title: 'Champion x Undercover', categories: ['Art Direction'], cover: '/work/champion-x-undercover/01.jpg' },
+  {
+    id: '1',
+    slug: 'champion-x-undercover',
+    title: 'Champion x Undercover',
+    categories: ['Art Direction'],
+    cover: '/work/champion-x-undercover/01.jpg',
+    images: [
+      '/work/champion-x-undercover/01.jpg',
+      '/work/champion-x-undercover/02.jpg',
+      '/work/champion-x-undercover/03.jpg',
+      '/work/champion-x-undercover/04.jpg',
+      '/work/champion-x-undercover/05.jpg',
+      '/work/champion-x-undercover/06.jpg',
+      '/work/champion-x-undercover/07.jpg',
+      '/work/champion-x-undercover/08.jpg',
+      '/work/champion-x-undercover/09.jpg',
+    ],
+  },
 //  { id: '2', slug: 'starbucks', title: 'Starbucks', categories: ['Art Direction', 'Set Design'], cover: '/work/starbucks/01.jpg' },
 //  { id: '3', slug: 'uniqlo', title: 'Uniqlo', categories: ['Art Direction'], cover: '/work/uniqlo/01.jpg' },
 //  { id: '4', slug: 'mukcyen', title: 'Mukcyen', categories: ['Art Direction'], cover: '/work/mukcyen/01.jpg' },
