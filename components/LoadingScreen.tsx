@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { TOWER_ART } from './tower-art';
 
 const SESSION_KEY = 'portfolio-loader-shown';
@@ -203,10 +203,17 @@ export default function LoadingScreen({ coverImages }: { coverImages: string[] }
   const [done, setDone] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  useEffect(() => {
-    // Deferred a tick rather than calling setState directly in the effect
-    // body — this is a mount-only check of an external system
-    // (sessionStorage), not a value derivable during render.
+  // useLayoutEffect (not useEffect) so this resolves before the browser
+  // paints, not after — the initial render (server and first client pass
+  // alike) can't know sessionStorage, so it always renders the covering
+  // shell below rather than null; this effect's only job is to end that
+  // shell state as fast as possible, either by skipping straight to `done`
+  // (session already shown) or swapping the shell for the real animation.
+  // The setState calls are still wrapped in queueMicrotask, same as before
+  // (react-hooks/set-state-in-effect flags a direct call either way) — a
+  // microtask queued from a layout effect still flushes before the browser's
+  // next paint, so this costs nothing toward the "before first paint" goal.
+  useLayoutEffect(() => {
     queueMicrotask(() => {
       try {
         if (sessionStorage.getItem(SESSION_KEY)) {
@@ -223,13 +230,16 @@ export default function LoadingScreen({ coverImages }: { coverImages: string[] }
   }, []);
 
   useEffect(() => {
-    if (!shouldRender || done) return;
+    // Covers the pending (pre-resolution) shell too, not just the animated
+    // phase — the shell is already blocking the portfolio from view, so
+    // scroll should be locked for as long as anything is covering it.
+    if (done) return;
     const previous = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => {
       document.body.style.overflow = previous;
     };
-  }, [shouldRender, done]);
+  }, [done]);
 
   useEffect(() => {
     if (!shouldRender) return;
@@ -353,7 +363,16 @@ export default function LoadingScreen({ coverImages }: { coverImages: string[] }
     };
   }, [shouldRender, coverImages]);
 
-  if (!shouldRender || done) return null;
+  if (done) return null;
+
+  // Rendered on the server and on the very first client pass alike — before
+  // the layout effect above has had a chance to resolve the once-per-session
+  // check — so the portfolio underneath is never exposed while that's
+  // pending. Once resolved, this either disappears entirely (done) or gets
+  // replaced by the real canvas animation below (shouldRender).
+  if (!shouldRender) {
+    return <div className="fixed inset-0 z-50 bg-background" aria-hidden="true" />;
+  }
 
   return (
     <div className="fixed inset-0 z-50">
